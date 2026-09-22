@@ -146,6 +146,7 @@ class AuditLogger:
         risk_score: float | None = None,
         details: dict[str, Any] | None = None,
         request_id: str = "",
+        ip_address: str = "",
     ) -> None:
         """Log an AI pipeline decision with reasoning."""
         event = AuditEvent(
@@ -162,6 +163,7 @@ class AuditLogger:
                 **(details or {}),
             },
             request_id=request_id,
+            ip_address=ip_address,
             severity="INFO",
         )
         self.log_event(event)
@@ -194,6 +196,7 @@ class AuditLogger:
         new_value: str,
         actor: str = "admin",
         request_id: str = "",
+        ip_address: str = "",
     ) -> None:
         """Log a configuration change."""
         event = AuditEvent(
@@ -207,6 +210,31 @@ class AuditLogger:
                 "new_value": new_value,
             },
             request_id=request_id,
+            ip_address=ip_address,
+            severity="WARNING",
+        )
+        self.log_event(event)
+
+    def log_admin_action(
+        self,
+        action: str,
+        actor: str = "admin",
+        details: dict[str, Any] | None = None,
+        request_id: str = "",
+        ip_address: str = "",
+    ) -> None:
+        """Log an admin-only action as a structured audit event."""
+        event = AuditEvent(
+            event_type="ADMIN_ACTION",
+            category=self.CATEGORIES["security"],
+            actor=actor,
+            target=action,
+            details={
+                "action": action,
+                **(details or {}),
+            },
+            request_id=request_id,
+            ip_address=ip_address,
             severity="WARNING",
         )
         self.log_event(event)
@@ -218,6 +246,7 @@ class AuditLogger:
         actor: str = "api",
         details: dict[str, Any] | None = None,
         request_id: str = "",
+        ip_address: str = "",
     ) -> None:
         """Log a data access event."""
         event = AuditEvent(
@@ -227,6 +256,7 @@ class AuditLogger:
             target=resource,
             details=details or {},
             request_id=request_id,
+            ip_address=ip_address,
             severity="INFO",
         )
         self.log_event(event)
