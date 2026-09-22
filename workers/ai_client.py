@@ -580,3 +580,74 @@ def detect_hand_gaze(
     except Exception as exc:
         logger.warning("MediaPipe hand detection failed: %s", exc)
         return None
+
+
+# --- Text-to-Speech (TTS) Helpers ---
+
+try:
+    import pyttsx3
+
+    HAS_TTS = True
+except ImportError:
+    HAS_TTS = False
+
+
+def speak_text(text: str) -> bool:
+    """Convert text to speech using pyttsx3 (local, no API key required).
+
+    Runs synchronously in the current thread. It runs entirely offline and requires
+    no external dependency or API key.
+
+    Args:
+        text: The question or text string to be spoken aloud.
+
+    Returns:
+        True if speech synthesis succeeded, False otherwise.
+    """
+    if not HAS_TTS:
+        logger.warning("TTS unavailable — pyttsx3 not installed")
+        return False
+
+    if not text or not text.strip():
+        logger.warning("speak_text() called with empty text — skipping")
+        return False
+
+    try:
+        engine = pyttsx3.init()
+        engine.say(text)
+        engine.runAndWait()
+        return True
+    except Exception as e:
+        logger.error(f"TTS speak_text() failed: {e}", exc_info=True)
+        return False
+
+
+def speak_text_to_file(text: str, output_path: str) -> bool:
+    """Convert text to speech and save as an audio file.
+
+    Save synthesized speech to an audio file (mp3 or .wav).
+
+    Args:
+        text: Text to synthesize.
+        output_path: File path to save audio (e.g. 'output.mp3')
+
+    Returns:
+        True if file was saved successfully, False otherwise.
+    """
+    if not HAS_TTS:
+        logger.warning("TTS unavailable — pyttsx3 not installed")
+        return False
+
+    if not text or not text.strip():
+        logger.warning("speak_text_to_file() called with empty text — skipping")
+        return False
+
+    try:
+        tts_engine = pyttsx3.init()
+        tts_engine.save_to_file(text, output_path)
+        tts_engine.runAndWait()
+        logger.info(f"TTS audio saved to '{output_path}'")
+        return True
+    except Exception as e:
+        logger.error(f"TTS save_to_file() failed: {e}", exc_info=True)
+        return False
